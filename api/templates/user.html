@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>ユーザーページ</title>
+</head>
+<body>
+<div>
+    <div>ユーザー名：　{{ user.username }}</div>
+    <div>
+        <label for="start">START:</label>
+        <input type="date" id="start" name="trip-start"
+               min="2022-12-01" max="2050-12-31">
+    </div>
+    <div>
+        <label for="end">END:</label>
+        <input type="date" id="end" name="trip-start"
+               min="2022-12-01" max="2050-12-31">
+    </div>
+    <div>
+        <button value="検索" onclick="Search()">検索</button>
+    </div>
+    <div id="weights_data" data-user_id="{{ user.id }}">
+        {% for data in weights_data %}
+        <div class="weight-data" data-created_at="{{ data.created_at }}" data-value="{{ data.value }}"></div>
+        {% endfor %}
+    </div>
+</div>
+<canvas id="myChart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    const datas_elements = document.getElementsByClassName("weight-data");
+    var dates = [];
+    var weights = [];
+    const user_id = document.getElementById("weights_data").dataset.user_id;
+    for (const ele of datas_elements){
+        dates.push(ele.dataset.created_at);
+        weights.push(ele.dataset.value);
+    }
+
+    var chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        // 横軸を指定
+        labels: dates,
+        datasets: [
+          {
+            // 上部のタイトル指定
+            label: '体重記録',
+            lineTension: 0.1,
+            // 色周りの指定
+            backgroundColor: 'rgba(75,192,192,0.4)',
+            borderColor: 'rgba(75,192,192,1)',
+            // 縦軸データを指定
+            data: weights
+          }
+        ]
+      },
+      options: {
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                // ここで最小値を指定することができる。指定しないとdataの最小値が最小値になる。
+                min: 50.0,
+                // ここで縦軸に単位を加えることができる。
+                userCallback: function (tick) {
+                  return tick.toString() + 'kg';
+                }
+              },
+              // 縦軸のラベル指定
+              scaleLabel: {
+                display: true,
+                labelString: '体重'
+              }
+            }
+          ]
+        }
+      }
+    });
+
+    const Search = () => {
+        console.log("検索開始");
+        const start_date = document.getElementById("start").value;
+        const end_date = document.getElementById("end").value;
+        console.log(start_date);
+        console.log(end_date);
+        let url = "/api/userpage/" + user_id + "/";
+        let isAdd = false;
+        if (start_date.length > 6){
+            url = url + "?created_span=" + start_date +">";
+            isAdd = true;
+        }
+        if (end_date.length > 6){
+            if (isAdd){
+                url = url + "," + end_date + "<";
+            }
+            else {
+                url = url + "?created_span=" + end_date +"<";
+            }
+        }
+        window.location.href = url;
+    }
+</script>
+</body>
+</html>
