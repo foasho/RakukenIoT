@@ -10,8 +10,8 @@ from models.database import SessionLocal
 app = FastAPI(
     title="RAKUKEN-API",
     middleware=[
-            Middleware(SessionMiddleware, secret_key=SECRET_KEY)
-        ],
+        Middleware(SessionMiddleware, secret_key=SECRET_KEY)
+    ],
 )
 
 
