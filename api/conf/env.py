@@ -6,7 +6,7 @@ load_dotenv()
 def str2bool(s):
     if not s:
         return False
-    return s.lower in ["true"]
+    return s.lower() in ["true"]
 
 def Env(key: str, type: str = "str"):
     val = os.getenv(key)
