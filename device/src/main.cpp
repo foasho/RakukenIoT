@@ -58,6 +58,10 @@ void loop() {
         if (suc == String("true")){
             orderBuzzer(250);
             Serial.println("SUCCESS SEND API");
+            if (isHttps){
+                // LINEBotに通知を送る
+                
+            }
             forceDeepSleep(60 * 3); // 強制3分スリープ
         }
         else {

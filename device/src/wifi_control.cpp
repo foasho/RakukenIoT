@@ -123,7 +123,6 @@ static int splitData(String data, char delimiter, String *dst){
  * @param access_token
  * @param user_id
  * @param route
- * @param weight
 */
 static StaticJsonDocument<HTTP_BODY_SIZE> sendWeight(char* endpoint, char* access_token, int user_id, float weight){
     String body = String("{\"data\":\"null\",\"success\":\"false\",\"messages\":\"\"}");
@@ -160,6 +159,47 @@ static StaticJsonDocument<HTTP_BODY_SIZE> sendWeight(char* endpoint, char* acces
     strcpy(apihost, String(readStr).c_str());
     String result = sendHttp(apihost, String(route), json, String(access_token));
     Serial.println("### Complete Send Weight Data ###");
+    Serial.println(result);
+    if (result == String("101")){
+        body = String("{\"data\":\"null\",\"success\":\"false\",\"messages\":\"101\"}");
+        deserializeJson(resBody, body);
+        return resBody;
+    }
+    else if (result == String("102")){
+        body = String("{\"data\":\"null\",\"success\":\"false\",\"messages\":\"102\"}");
+        deserializeJson(resBody, body);
+        return resBody;
+    }
+    else {
+        // 結果を返す
+        deserializeJson(resBody, result);
+        return resBody;
+    }
+    return resBody;
+}
+
+/**
+ * 体重をLINEに送る
+ * @param endpoint
+ * @param access_token
+ * @param weight
+*/
+static StaticJsonDocument<HTTP_BODY_SIZE> sendLineBot(char* endpoint, char* access_token, float weight){
+    String body = String("{\"data\":\"null\",\"success\":\"false\",\"messages\":\"\"}");
+    StaticJsonDocument<HTTP_BODY_SIZE> resBody; 
+    String json =  "{\"weight\":"+ String(weight) + "}";
+
+    char *route = "/api/line-weight";
+
+    // "https://"を取り除く
+    char apihost[100];
+    String readStr = String(endpoint);
+    readStr.replace("https://", "");
+    readStr.trim();
+
+    strcpy(apihost, String(readStr).c_str());
+    String result = sendHttp(apihost, String(route), json, String(access_token));
+    Serial.println("### Complete Send Line Weight Data ###");
     Serial.println(result);
     if (result == String("101")){
         body = String("{\"data\":\"null\",\"success\":\"false\",\"messages\":\"101\"}");
