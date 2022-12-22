@@ -124,7 +124,7 @@ def get_device_access_token(
 
 # ユーザーページ(デバッグ用)
 @router.get("/userpage/{user_id}", response_class=HTMLResponse)
-def get_userpage(
+async def get_userpage(
         user_id: int,
         request: Request,
         db=Depends(database.get_db),
@@ -155,4 +155,4 @@ def get_userpage(
             }
         )
     else:
-        return templates.TemplateResponse("empty.html", {})
+        return templates.TemplateResponse("empty.html", {"request": request})
