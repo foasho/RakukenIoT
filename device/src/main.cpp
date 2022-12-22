@@ -25,15 +25,16 @@ void setup() {
 
     // 各IOをセットアップする
     setupIO();
-    //自動キャリブレーションをコメントアウト※測定できないときがあったため
+    // 自動キャリブレーションをコメントアウト※測定できないときがあったため
     // if (BOOT_COUNTER == 0 || BOOT_COUNTER % autoCalibrationNum == 0){
     //     waitNotWeight(WEIGHT_THRESHOLD, 12000);
     //     autoCalibration();
     // }
+    delay(100);
     BOOT_COUNTER = BOOT_COUNTER + 1;
-    getKg();
-    delay(50);
-    if (kg < WEIGHT_THRESHOLD) sleepMode();
+    float first_kg = getKg();
+    delay(100);
+    if (first_kg < WEIGHT_THRESHOLD) sleepMode();
 
     // WiFiに接続する
     int rssi = connectWiFi(saveData.ssid, saveData.password);
