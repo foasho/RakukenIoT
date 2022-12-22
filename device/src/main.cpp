@@ -31,6 +31,7 @@ void setup() {
     //     autoCalibration();
     // }
     BOOT_COUNTER = BOOT_COUNTER + 1;
+    getKg();
     delay(50);
     if (kg < WEIGHT_THRESHOLD) sleepMode();
 
