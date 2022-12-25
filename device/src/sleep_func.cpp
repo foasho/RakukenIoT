@@ -23,7 +23,6 @@ static void clearReg(){
  * @brief n秒間DeepSleepする[割り込み許可]
  */
 static void deepSleep(int n){
-    clearReg();
     // スリープの設定(SLOWメモリとインターセプトを許可する)
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
