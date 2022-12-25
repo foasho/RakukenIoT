@@ -1,10 +1,10 @@
-from multiprocessing import cpu_count
+# from multiprocessing import cpu_count
 
 user = "ubuntu"
 application = "RakukenIoT/api"
 bind = f'/home/{user}/{application}/gunicorn.sock'
 
-workers = cpu_count() + 1
+workers = 2
 worker_class = 'uvicorn.workers.UvicornWorker'
 
 loglevel = 'debug'
