@@ -2,7 +2,7 @@
 
 user = "ubuntu"
 application = "RakukenIoT/api"
-bind = f'/home/{user}/{application}/gunicorn.sock'
+bind = f'unix:/home/{user}/{application}/gunicorn.sock'
 
 workers = 2
 worker_class = 'uvicorn.workers.UvicornWorker'
