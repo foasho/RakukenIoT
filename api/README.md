@@ -57,17 +57,18 @@ pip install -r requirements.txt
 
 データベースの作成
 ```commandline
-sudo mysql_secure_installation
 パスワードを入力し、あとはひらすらy
-sudo mysql -u root -p
+sudo mysql -u root
 CREATE USER 'rk'@'localhost' IDENTIFIED BY '設定したパスワード';
 GRANT ALL ON *.* TO rk@localhost;
 FLUSH PRIVILEGES;
+quit;
 mysql -u rk -p
 '設定したパスワード'
 create database rkdb;
 exit;
 
+<.envファイルの作成>
 alembic upgrade head
 ```
 # SSL証明書を使わず、HTTPとしてサービス化する場合
@@ -98,6 +99,9 @@ sudo systemctl status rkapi
 
 # SSL証明書を使って、HTTPSとしてサービス化する場合
 ```commandline
+
+```
+```commandline
 sudo nano /etc/systemd/system/rkapi.service
 ---------------
 [Unit]
@@ -119,26 +123,38 @@ sudo systemctl daemon-reload
 sudo systemctl enable rkapi
 sudo systemctl start rkapi
 sudo systemctl status rkapi
-
-http://your_domain
 ```
 
 ## Nginxでサーバー化
 ```commandline
-sudo apt install nginx
-sudo nano /etc/nginx/sites-available/rkapi
+sudo apt install nginx　-y
 
+#既存設定ファイルを移動
+sudo mv /etc/nginx/sites-enabled/default ./default_backup
+
+sudo nano /etc/nginx/sites-available/rakuken-iot.net
 ----
 server {
+    client_max_body_size 64M;
     listen 80;
-    server_name your_domain www.your_domain;
+    server_name api.slingacademy.com;
     location / {
-        proxy_pass http://unix:/home/demo/fastapi_demo/gunicorn.sock;
+    proxy_pass http://127.0.0.1:8000;
+        proxy_read_timeout     60;
+        proxy_connect_timeout  60;
+        proxy_redirect         off;
+
+        # Allow the use of websockets
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 ----
 
-sudo ln -s /etc/nginx/sites-available/rkapi /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/rakuken-iot.net /etc/nginx/sites-enabled/
 ```
 
 ## LetsEncriptでSSL化
@@ -151,4 +167,11 @@ sudo certbot --nginx -d your_domain -d www.your_domain
 >> Y:同意
 
 https://your_domain
+
+自動更新化
+```
+
+## デバッグ
+```commandline
+sudo 
 ```
