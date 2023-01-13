@@ -138,7 +138,7 @@ export const DesktopContainer = (props: IDesktopContainer) => {
                 <Segment
                     inverted
                     textAlign='center'
-                    style={{ background: "linear-gradient(180deg, #38D4DE 0%, #75C6CB 50%, #ECFEFF 100%)", minHeight: 700, padding: '0em 0em' }}
+                    style={{ background: "linear-gradient(180deg, #38D4DE 0%, #75C6CB 50%, #ECFEFF 100%)", minHeight: 700, padding: '1em 1em' }}
                     vertical
                 >
                     <Menu
