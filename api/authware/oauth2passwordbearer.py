@@ -1,4 +1,4 @@
-from fastapi.security import OAuth2PasswordBearer, OAuth2, OAuth2AuthorizationCodeBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import  HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -21,7 +21,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-def get_password_hash(password):
+def create_password_hash(password):
     return pwd_context.hash(password)
 
 def create_access_token(data: dict):

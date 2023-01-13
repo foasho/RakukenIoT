@@ -4,7 +4,7 @@ from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
 from commons import common_func
 from authware.oauth2passwordbearer import create_refresh_token, create_access_token, get_current_user, \
-    create_device_token, get_password_hash
+    create_device_token, create_password_hash
 from models import schemas, database, models, crud
 from sqlalchemy.orm.session import Session
 from datetime import datetime, timedelta
@@ -87,7 +87,7 @@ def login(request: schemas.Login, db: Session = Depends(database.get_db)):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail='Invalid credentials'
             )
-    if not user.password == get_password_hash(request.password):
+    if not user.password == create_password_hash(request.password):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Incorrect password'

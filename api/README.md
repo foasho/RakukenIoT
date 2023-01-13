@@ -71,6 +71,18 @@ exit;
 <.envファイルの作成>
 alembic upgrade head
 ```
+
+Nodejsのインストールとビルド
+```commandline
+sudo su
+curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+apt update && apt install -y nodejs
+su ubuntu
+cd ../frontend
+npm install
+npm run build
+```
+
 # SSL証明書を使わず、HTTPとしてサービス化する場合
 ```commandline
 sudo nano /etc/systemd/system/rkapi.service
@@ -172,6 +184,10 @@ https://your_domain
 ```
 
 ## デバッグ
+- システムアップデート
 ```commandline
-sudo 
+cd api
+git pull
+sudo systemctl restart rkapi
+sudo systemctl restart nginx
 ```
