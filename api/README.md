@@ -1,5 +1,5 @@
 # RAKUKEN-API
-- Python: 3.7.5
+- Python: 3.7.4
 - フレームワーク: FastAPI
 - データベース : MySQL
 

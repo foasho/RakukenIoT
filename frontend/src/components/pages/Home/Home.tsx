@@ -1,5 +1,4 @@
 import 'semantic-ui-css/semantic.min.css';
-import { createMedia } from '@artsy/fresnel'
 import React, { Component, useEffect, useState } from 'react'
 import {
     Button,
@@ -8,210 +7,16 @@ import {
     Embed,
     Grid,
     Header,
-    Icon,
-    Image,
     List,
-    Menu,
     Segment,
-    Sidebar,
-    Visibility,
 } from 'semantic-ui-react';
 import Prism from 'prismjs'
-import 'prismjs/components/prism-javascript' // Language
-import 'prismjs/themes/prism-okaidia.css' // Theme
+import 'prismjs/components/prism-javascript'
+import 'prismjs/themes/prism-okaidia.css'
 
 export enum colorPallet {
     btn="#0e0e0e",
 }
-
-const { MediaContextProvider, Media } = createMedia({
-  breakpoints: {
-    mobile: 0,
-    tablet: 768,
-    computer: 1024,
-  },
-})
-
-/**
- * トップに出すイメージヘッダ
- */
-interface IHomepageHeading {
-    mobile: boolean;
-}
-const HomepageHeading = (props: IHomepageHeading) => {
-    return (
-        <Container text>
-            <Header
-                as='h1'
-                content='らくけんIoT'
-                inverted
-                style={{
-                    fontSize: props.mobile ? '2em' : '4em',
-                    fontWeight: 'normal',
-                    marginBottom: 0,
-                    marginTop: props.mobile ? '1.5em' : '3em',
-                }}
-            />
-            <Header
-                as='h2'
-                content='完全なオープンソースIoTプロジェクト'
-                inverted
-                style={{
-                    fontSize: props.mobile ? '1.5em' : '1.7em',
-                    fontWeight: 'normal',
-                    marginTop: props.mobile ? '0.5em' : '1.5em',
-            }}
-            />
-            
-            <Button primary size='huge'>
-                <a href='#whats' style={{color: colorPallet.btn}}>らくけんIoTとは？</a>
-                <Icon name={"arrow right"} />
-            </Button>
-            <Button olive size='huge'>
-                <a href='#usage' style={{color: colorPallet.btn}}>さっそく作ってみる</a>
-                <Icon name={"arrow right"} />
-            </Button>
-
-        </Container>
-    )
-}
-
-
-
-/* 
-*  デスクトップ表示
-*/
-interface IDesktopContainer {
-    children: JSX.Element,
-}
-const DesktopContainer = (props: IDesktopContainer) => {
-    const [state, setState] = useState({fixed: false});
-
-    const hideFixedMenu = () => setState({ fixed: false })
-    const showFixedMenu = () => setState({ fixed: true })
-
-    const { children } = props;
-    const { fixed } = state;
-
-    return (
-        <Media greaterThan='mobile'>
-            <Visibility
-                once={false}
-                onBottomPassed={showFixedMenu}
-                onBottomPassedReverse={hideFixedMenu}
-            >
-            <Segment
-                inverted
-                textAlign='center'
-                style={{ minHeight: 700, padding: '1em 0em' }}
-                vertical
-            >
-                <Menu
-                fixed={fixed ? 'top' : undefined}
-                inverted={!fixed}
-                pointing={!fixed}
-                secondary={!fixed}
-                size='large'
-                >
-                <Container>
-                    <Menu.Item as='a' active>ホーム</Menu.Item>
-                    <Menu.Item as='a'><a href='/docs'>APIリファレンス</a></Menu.Item>
-                    <Menu.Item as='a'><a href='https://github.com/foasho/RakukenIoT'>Github</a></Menu.Item>
-                    <Menu.Item position='right'>
-                        <Button as='a' inverted={!fixed} onClick={() => window.location.href = "/login"}>
-                            ログイン
-                        </Button>
-                        <Button as='a' inverted={!fixed} primary={fixed} style={{ marginLeft: '0.5em' }} onClick={() => window.location.href = "/signin"}>
-                            作成
-                        </Button>
-                    </Menu.Item>
-                </Container>
-                </Menu>
-                <HomepageHeading mobile={false} />
-            </Segment>
-            </Visibility>
-
-            {children}
-        </Media>
-    )
-}
-
-
-/**
- * モバイル表示
- */
-interface IMobileContainer {
-    children: JSX.Element
-  }
-const MobileContainer = (props: IMobileContainer) => {
-    const [state, setState] = useState({sidebarOpened: false});
-
-    const handleSidebarHide = () => setState({ sidebarOpened: false })
-
-    const handleToggle = () => setState({ sidebarOpened: true })
-
-    return (
-        <Media at='mobile'>
-            <Sidebar.Pushable>
-            <Sidebar
-                as={Menu}
-                animation='overlay'
-                inverted
-                onHide={handleSidebarHide}
-                vertical
-                visible={state.sidebarOpened}
-            >
-                <Menu.Item as='a' active>ホーム</Menu.Item>
-                <Menu.Item as='a'><a href='/docs'>APIリファレンス</a></Menu.Item>
-                <Menu.Item as='a'><a href='https://github.com/foasho/RakukenIoT'>Github</a></Menu.Item>
-                <Menu.Item as='a'>Log in</Menu.Item>
-                <Menu.Item as='a'>Sign Up</Menu.Item>
-            </Sidebar>
-
-            <Sidebar.Pusher dimmed={state.sidebarOpened}>
-                <Segment
-                inverted
-                textAlign='center'
-                style={{ minHeight: 350, padding: '1em 0em' }}
-                vertical
-                >
-                <Container>
-                    <Menu inverted pointing secondary size='large'>
-                    <Menu.Item onClick={handleToggle}>
-                        <Icon name='sidebar' />
-                    </Menu.Item>
-                    <Menu.Item position='right'>
-                        <Button as='a' inverted>
-                        Log in
-                        </Button>
-                        <Button as='a' inverted style={{ marginLeft: '0.5em' }}>
-                        Sign Up
-                        </Button>
-                    </Menu.Item>
-                    </Menu>
-                </Container>
-                <HomepageHeading mobile />
-                </Segment>
-                {props.children}
-            </Sidebar.Pusher>
-            </Sidebar.Pushable>
-        </Media>
-    )
-}
-
-
-/**
- * Responsiveコンポーネント
- */
-interface IResponsiveContainer {
-    children: JSX.Element;
-  }
-const ResponsiveContainer = (props: IResponsiveContainer) => (
-    <MediaContextProvider>
-        <DesktopContainer>{props.children}</DesktopContainer>
-        <MobileContainer>{props.children}</MobileContainer>
-    </MediaContextProvider>
-)
 
 
 /**
@@ -224,7 +29,6 @@ export const HomeComponent = () => {
         Prism.highlightAll()
     }, [])
     return (
-        <ResponsiveContainer>
             <>
                 <Segment style={{ padding: '0em' }} vertical id="whats">
                     <Grid celled='internally' columns='equal' stackable>
@@ -265,17 +69,17 @@ export const HomeComponent = () => {
                         <Grid.Row>
                             <Grid.Column width={6}>
                                 <Header as='h3' style={{ fontSize: '2em' }}>
-                                    デモ動画
+                                    組み立て動画
                                 </Header>
-                                <Embed
-                                    id='O6Xo21L0ybE'
-                                    placeholder='/images/image-16by9.png'
+                                {/* <Embed
+                                    id=''
+                                    placeholder='/top_background.png'
                                     source='youtube'
-                                />
+                                /> */}
                             </Grid.Column>
                             <Grid.Column floated='right' width={8}>
                                 <Header as='h3' style={{ fontSize: '2em' }}>
-                                    自身でサービスをホスティング
+                                    市販品で組み立てる
                                 </Header>
                                 <Header as='h3' style={{ fontSize: '1.5em' }}>
                                     事前準備
@@ -419,7 +223,7 @@ export const HomeComponent = () => {
                     </Container>
                 </Segment>
 
-                <Segment inverted vertical style={{ padding: '5em 0em' }}>
+                <Segment inverted vertical style={{ padding: '5em 0em', background: "#75C6CB" }}>
                     <Container>
                         <Grid divided inverted stackable>
                         <Grid.Row>
@@ -442,10 +246,11 @@ export const HomeComponent = () => {
                                 Design By ShoOsaka
                             </Header>
                             <p>
-                                本プロジェクトは自由にご活用ください。
+                                本プロジェクトに関する設計書およびソースコードは、自由にご活用ください。
                                 <br/>
-                                また、本プロジェクト関することおよび2次的に制作されたプロジェクトに関しても、
+                                また、本プロジェクト関することおよび2次的に制作されたプロジェクトに関して、
                                 一切の責任を負いかねますのでご了承の上ご活用ください。
+                                ハードウェアに関する設計不良等に関する損害等も一切の責任を負いませんので、ご了承ください。
                             </p>
                             </Grid.Column>
                         </Grid.Row>
@@ -453,6 +258,5 @@ export const HomeComponent = () => {
                     </Container>
                 </Segment>
             </>
-        </ResponsiveContainer>
     )
 }

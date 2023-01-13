@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+
+from authware.oauth2passwordbearer import get_password_hash
 from models import models, schemas
 from sqlalchemy import desc, or_, func, asc
 
@@ -19,6 +21,8 @@ def get_users(db: Session):
 
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(**user.dict(exclude_unset=True))
+    if db_user.password:
+        db_user.password = get_password_hash(password=db_user.password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

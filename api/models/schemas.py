@@ -6,7 +6,6 @@ from pydantic import BaseModel
 """
 class Login(BaseModel):
     username: Optional[str]
-    email: Optional[str]
     password: Optional[str]
 
 class LoginRefresh(BaseModel):
