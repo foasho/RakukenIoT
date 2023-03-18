@@ -1,10 +1,11 @@
-from fastapi.security import OAuth2PasswordBearer, OAuth2, OAuth2AuthorizationCodeBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import  HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import jwt
 from jose.exceptions import JWTError
 from models import database, crud, schemas, models
+from passlib.context import CryptContext
 from conf.env import Env
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -12,29 +13,36 @@ oauth2_scheme = HTTPBearer()
 
 SECRET_KEY = Env("SECRET_KEY")
 ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REFRESH_TOKEN_EXPIRE_MINUTES = 60*24*30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 # 1時間
+REFRESH_TOKEN_EXPIRE_MINUTES = 60*24*30 # 30日間
+DEVICE_TOKEN_EXPIRE_YEAR = 90 # 90年※実質永遠
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def create_access_token(data: dict, expires_delta: int = ACCESS_TOKEN_EXPIRE_MINUTES, year: int = None):
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def create_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict):
       to_encode = data.copy()
-      if year != None:
-          expire = datetime.now() + timedelta(days=365*year)
-      elif expires_delta:
-          expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-      else:
-          expire = datetime.now() + timedelta(minutes=15)
-      to_encode.update({"exp": expire})
+      expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+      to_encode.update({"exp": expire, "access_type": "access"})
       encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
       return encoded_jwt
 
 
-def create_refresh_token(data: dict, expires_delta: int = REFRESH_TOKEN_EXPIRE_MINUTES):
+def create_refresh_token(data: dict):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+    expire = datetime.now() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire, "access_type": "refresh"})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def create_device_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.now() + timedelta(days=365*DEVICE_TOKEN_EXPIRE_YEAR)
+    to_encode.update({"exp": expire, "access_type": "device"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -50,6 +58,7 @@ def get_current_user_from_token(auth: HTTPAuthorizationCredentials, token_type: 
     try:
         payload = jwt.decode(auth.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        access_type: str = payload.get("access_type")
         if username is None:
             raise credentials_exception
     except JWTError:#ここで期限切れを見てくれている

@@ -3,7 +3,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
 from commons import common_func
-from authware.oauth2passwordbearer import create_refresh_token, create_access_token, get_current_user
+from authware.oauth2passwordbearer import create_refresh_token, create_access_token, get_current_user, \
+    create_device_token, create_password_hash
 from models import schemas, database, models, crud
 from sqlalchemy.orm.session import Session
 from datetime import datetime, timedelta
@@ -79,20 +80,22 @@ def login(request: schemas.Login, db: Session = Depends(database.get_db)):
     res = common_func.get_init_res()
     user = db.query(models.User).filter(models.User.username == request.username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Invalid credentials'
-        )
-    if not user.password == request.password:
+        if "@" in request.username:# メールアドレスでもログインできるようにする
+            user = db.query(models.User).filter(models.User.email == request.username).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Invalid credentials'
+            )
+    if not user.password == create_password_hash(request.password):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Incorrect password'
         )
-    access_token = create_access_token(data={'sub': user.username})
-    refresh_token = create_refresh_token(data={'sub': user.username})
     res["data"] = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
+        'access_token': create_access_token(data={'sub': user.username}),
+        'refresh_token': create_refresh_token(data={'sub': user.username}),
+        'device_token': create_device_token(data={'sub': user.username}),
         'token_type': 'bearer',
         'user_id': user.id,
         'username': user.username
@@ -118,41 +121,6 @@ def get_device_access_token(
         current_user=Depends(get_current_user)
 ):
     res = common_func.get_init_res()
-    res["data"] = create_access_token(data={'sub': current_user.username}, year=3)
+    res["data"] = create_device_token(data={'sub': current_user.username})
     res["success"] = True
     return schemas.RootResponse(**res)
-
-# ユーザーページ(デバッグ用)
-@router.get("/userpage/{user_id}", response_class=HTMLResponse)
-async def get_userpage(
-        user_id: int,
-        request: Request,
-        db=Depends(database.get_db),
-        limit=5000,
-        skip=0,
-        created_span=None
-):
-    is_debug = Env("DEBUG", "bool")
-    # created_spanの指定がないときは、14日間のデータを取得
-    if not created_span:
-        created_span = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d>")
-    db_weight_logs = crud.get_weight_logs(
-        db=db,
-        user_id=user_id,
-        skip=skip,
-        limit=limit,
-        filter_params={
-            "created_span": created_span
-        }
-    )
-    if is_debug:
-        return templates.TemplateResponse(
-            "user.html",
-            {
-                "request": request,
-                "user": crud.get_user(db=db, user_id=user_id),
-                "weights_data": [{"value": wd.value, "created_at": common_func.convert_simple_date(wd.created_at)} for wd in db_weight_logs]
-            }
-        )
-    else:
-        return templates.TemplateResponse("empty.html", {"request": request})

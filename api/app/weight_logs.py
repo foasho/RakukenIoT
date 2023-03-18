@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from commons import common_func
 from authware.oauth2passwordbearer import get_current_user
 from models import schemas, database, crud
+from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -11,9 +12,13 @@ def get_weight_logs(
         db=Depends(database.get_db),
         skip=0,
         limit=5000,
-        created_span: str = None
+        created_span: str = None,
+        day=None
 ):
     res = common_func.get_init_res()
+    if not created_span and day:
+        prev_date = datetime.now() - timedelta(days=day)
+        created_span = prev_date.strftime("%Y-%m-%d>")
     res["data"] = crud.get_weight_logs(
         db=db,
         user_id=current_user.id,
